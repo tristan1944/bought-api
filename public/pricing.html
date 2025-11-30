@@ -29,8 +29,49 @@
         h1 {
             text-align: center;
             color: white;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
             font-size: 2.5em;
+        }
+
+        .user-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .user-info.active {
+            display: block;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+            font-size: 1.1em;
+        }
+
+        .user-info .user-name {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .pricing-grid {
@@ -176,6 +217,11 @@
 <body>
     <div class="container">
         <h1>Choose Your Plan</h1>
+        <div class="user-info" id="userInfo">
+            <p class="user-name" id="userName"></p>
+            <p id="userEmail"></p>
+            <a href="#" class="btn-logout" onclick="logout()">Logout</a>
+        </div>
         <div class="error-message" id="errorMessage"></div>
         <div class="pricing-grid">
             <div class="pricing-card">
@@ -235,6 +281,41 @@
 
         function hideModal() {
             document.getElementById('accountModal').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/pricing.html';
+        }
+
+        async function loadUserInfo() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    document.getElementById('userInfo').classList.remove('active');
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.user;
+                    document.getElementById('userName').textContent = `Welcome, ${user.name}!`;
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('userInfo').classList.add('active');
+                } else {
+                    localStorage.removeItem('authToken');
+                    document.getElementById('userInfo').classList.remove('active');
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                document.getElementById('userInfo').classList.remove('active');
+            }
         }
 
         async function checkUserExists() {
@@ -304,18 +385,28 @@
             }
         }
 
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const error = urlParams.get('error');
+            const loggedIn = urlParams.get('loggedIn');
 
             if (token) {
                 localStorage.setItem('authToken', token);
                 window.history.replaceState({}, document.title, window.location.pathname);
+                await loadUserInfo();
+            } else if (loggedIn === 'true') {
+                await loadUserInfo();
+            } else {
+                await loadUserInfo();
             }
 
             if (error) {
-                showError('Authentication failed. Please try again.');
+                if (error === 'oauth_not_configured') {
+                    showError('Google OAuth is not configured. Please contact support.');
+                } else {
+                    showError('Authentication failed. Please try again.');
+                }
             }
         });
     </script>

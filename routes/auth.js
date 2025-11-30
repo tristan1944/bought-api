@@ -28,7 +28,7 @@ router.get('/google/callback',
         { expiresIn: '7d' }
       );
 
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard.html?token=${token}`);
+      res.redirect(`${process.env.FRONTEND_URL}/pricing.html?token=${token}&loggedIn=true`);
     } catch (error) {
       console.error('Auth callback error:', error);
       res.redirect(`${process.env.FRONTEND_URL}/pricing.html?error=auth_failed`);
