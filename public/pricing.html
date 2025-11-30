@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Plans</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            font-size: 2.5em;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .plan-name {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 3em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .plan-price span {
+            font-size: 0.5em;
+            color: #666;
+        }
+
+        .plan-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn-select {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-select:hover {
+            opacity: 0.9;
+        }
+
+        .btn-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content p {
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .btn-google {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-google:hover {
+            background: #357ae8;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Choose Your Plan</h1>
+        <div class="error-message" id="errorMessage"></div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="plan-name">Plan 1</div>
+                <div class="plan-price">$1<span>/one-time</span></div>
+                <div class="plan-description">Basic plan with essential features</div>
+                <button class="btn-select" onclick="selectPlan('plan1')">Select Plan</button>
+            </div>
+            <div class="pricing-card">
+                <div class="plan-name">Plan 2</div>
+                <div class="plan-price">$2<span>/one-time</span></div>
+                <div class="plan-description">Standard plan with more features</div>
+                <button class="btn-select" onclick="selectPlan('plan2')">Select Plan</button>
+            </div>
+            <div class="pricing-card">
+                <div class="plan-name">Plan 3</div>
+                <div class="plan-price">$3<span>/one-time</span></div>
+                <div class="plan-description">Premium plan with all features</div>
+                <button class="btn-select" onclick="selectPlan('plan3')">Select Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="accountModal" class="modal">
+        <div class="modal-content">
+            <h2>Create an Account</h2>
+            <p>You need to create an account to continue with your purchase.</p>
+            <a href="/auth/google" class="btn-google">
+                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="#000" fill-rule="evenodd">
+                        <path d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z" fill="#EA4335"/>
+                        <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.21 1.18-.84 2.18-1.79 2.91l2.73 2.12c1.63-1.5 2.74-3.7 2.74-6.53z" fill="#4285F4"/>
+                        <path d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.01 9.01 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z" fill="#FBBC05"/>
+                        <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.73-2.12c-.76.53-1.78.9-3.23.9-2.38 0-4.4-1.57-5.12-3.74L.96 13.04C2.45 15.98 5.48 18 9 18z" fill="#34A853"/>
+                    </g>
+                </svg>
+                Sign in with Google
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showModal() {
+            document.getElementById('accountModal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('accountModal').style.display = 'none';
+        }
+
+        async function checkUserExists() {
+            try {
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    const response = await fetch(`${API_URL}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        return token;
+                    } else {
+                        localStorage.removeItem('authToken');
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error('Error checking user:', error);
+                return null;
+            }
+        }
+
+        async function selectPlan(planId) {
+            try {
+                const token = await checkUserExists();
+
+                if (!token) {
+                    showModal();
+                    return;
+                }
+
+                const button = event.target;
+                button.disabled = true;
+                button.innerHTML = '<span class="loading"></span> Processing...';
+
+                const response = await fetch(`${API_URL}/api/stripe/create-checkout-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ planId })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+
+                window.location.href = data.url;
+            } catch (error) {
+                console.error('Error selecting plan:', error);
+                showError(error.message || 'An error occurred. Please try again.');
+                const button = event.target;
+                button.disabled = false;
+                button.textContent = 'Select Plan';
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('accountModal');
+            if (event.target === modal) {
+                hideModal();
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const error = urlParams.get('error');
+
+            if (token) {
+                localStorage.setItem('authToken', token);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            if (error) {
+                showError('Authentication failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
+
