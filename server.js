@@ -9,6 +9,7 @@ const User = require('./models/User');
 
 const authRoutes = require('./routes/auth');
 const stripeRoutes = require('./routes/stripe');
+const chatbotRoutes = require('./routes/chatbot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,6 +65,7 @@ app.use(passport.session());
 
 app.use('/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 app.get('/', (req, res) => {
   res.redirect('/pricing.html');

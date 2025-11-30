@@ -38,6 +38,22 @@ const initializeSchema = async () => {
       CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS chatbot_configs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        icon_url TEXT,
+        primary_color VARCHAR(7) DEFAULT '#667eea',
+        widget_code TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_chatbot_configs_user_id ON chatbot_configs(user_id);
+    `);
+
     console.log('Database schema initialized');
   } catch (error) {
     console.error('Schema initialization error:', error);

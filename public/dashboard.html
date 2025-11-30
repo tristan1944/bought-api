@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Chatbot Configuration</title>
     <style>
         * {
             margin: 0;
@@ -13,138 +13,577 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 15px;
-            padding: 50px;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-        }
-
-        .greeting {
-            font-size: 2em;
-            color: #667eea;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-
-        .user-info {
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.8;
-        }
-
-        .btn-logout {
-            background: #dc3545;
             color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .user-popup {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 300px;
+            padding: 20px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-popup.active {
+            display: block;
+        }
+
+        .user-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-popup-header .close {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #666;
+        }
+
+        .user-popup-header .close:hover {
+            color: #333;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .user-profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-picture {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-picture .camera-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #333;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6em;
+        }
+
+        .user-greeting {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .manage-account-btn {
+            background: white;
+            border: 1px solid #4285f4;
+            color: #4285f4;
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            font-size: 0.9em;
         }
 
-        .btn-logout:hover {
-            background: #c82333;
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            gap: 20px;
+            padding: 20px;
         }
 
-        .loading {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(102, 126, 234, 0.3);
-            border-radius: 50%;
-            border-top-color: #667eea;
-            animation: spin 1s ease-in-out infinite;
+        .left-panel {
+            flex: 0 0 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 5px;
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
             margin-bottom: 20px;
+            color: #333;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .provider-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .provider-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            padding: 8px;
+            background: #f5f5f5;
+        }
+
+        .provider-icon:hover {
+            transform: scale(1.1);
+            background: #e8e8e8;
+        }
+
+        .provider-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .icon-upload {
+            margin-bottom: 25px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e8e8ff;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .upload-hint {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .current-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 15px auto;
+            display: block;
+            border: 2px solid #ddd;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .color-picker-section {
+            margin-bottom: 25px;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+        }
+
+        .color-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .code-snippet-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .code-container pre {
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            border-radius: 8px;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .chatbot-widget-preview {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+        }
+
+        .chatbot-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            transition: transform 0.2s;
+        }
+
+        .chatbot-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chatbot-popup {
+            position: absolute;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chatbot-popup.active {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-header h3 {
+            font-size: 1em;
+            margin: 0;
+        }
+
+        .chatbot-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.bot {
+            background: #f0f0f0;
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                flex: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="loading" class="loading"></div>
-        <div id="content" style="display: none;">
-            <h1>Welcome!</h1>
-            <div class="greeting" id="greeting"></div>
-            <div class="user-info">
-                <p><strong>Email:</strong> <span id="userEmail"></span></p>
-                <p><strong>Name:</strong> <span id="userName"></span></p>
-                <p><strong>Plan:</strong> <span id="userPlan"></span></p>
+    <div class="header">
+        <h1>AI Chatbot Configuration</h1>
+        <div class="user-menu">
+            <div class="user-icon" id="userIcon" onclick="toggleUserPopup()">
+                <span id="userInitial">U</span>
             </div>
-            <a href="/pricing.html" class="btn-logout" onclick="logout()">Logout</a>
+            <div class="user-popup" id="userPopup">
+                <div class="user-popup-header">
+                    <span class="user-email" id="userEmail"></span>
+                    <span class="close" onclick="toggleUserPopup()">×</span>
+                </div>
+                <div class="user-profile">
+                    <div class="profile-picture" id="profilePicture">
+                        <span id="profileInitial">U</span>
+                        <div class="camera-icon">📷</div>
+                    </div>
+                    <div class="user-greeting" id="userGreeting">Hi, User!</div>
+                    <a href="#" class="manage-account-btn">Manage your Google Account</a>
+                </div>
+            </div>
         </div>
-        <div id="error" style="display: none;">
-            <div class="error-message">
-                <p>You need to be signed in to access this page.</p>
-                <a href="/pricing.html" style="color: #667eea; text-decoration: underline;">Go to Pricing</a>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="config-section">
+                <h2 class="section-title">Search Provider</h2>
+                <input type="text" class="search-bar" id="providerSearch" placeholder="Search for your site provider (e.g., WordPress)">
+                <div class="provider-icons" id="providerIcons"></div>
+            </div>
+
+            <div class="config-section icon-upload">
+                <h2 class="section-title">Upload Icon</h2>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('iconFile').click()">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Click to upload or drag and drop</div>
+                    <div class="upload-hint">PNG, JPG, SVG up to 5MB</div>
+                </div>
+                <input type="file" id="iconFile" accept="image/*">
+                <img id="currentIcon" class="current-icon" style="display: none;">
+            </div>
+
+            <div class="config-section color-picker-section">
+                <h2 class="section-title">Widget Color</h2>
+                <div class="color-preview" id="colorPreview"></div>
+                <div class="color-input-group">
+                    <input type="color" id="colorPicker" value="#667eea">
+                    <input type="text" id="colorInput" value="#667eea">
+                </div>
+            </div>
+
+            <div class="code-snippet-section">
+                <h2 class="section-title">Integration Code</h2>
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+                    <pre id="codeSnippet"></pre>
+                </div>
+                <div class="success-message" id="copySuccess">Code copied to clipboard!</div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h2 class="section-title">Live Preview</h2>
+            <div class="preview-area">
+                <div class="chatbot-widget-preview">
+                    <div class="chatbot-icon" id="chatbotIcon" onclick="toggleChatbot()">
+                        <span id="chatbotIconText">💬</span>
+                    </div>
+                    <div class="chatbot-popup" id="chatbotPopup">
+                        <div class="chatbot-header">
+                            <h3>AI Assistant</h3>
+                            <button class="chatbot-close" onclick="toggleChatbot()">×</button>
+                        </div>
+                        <div class="chatbot-messages">
+                            <div class="message bot">Hello! How can I help you today?</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = window.location.origin;
+        let currentConfig = {
+            iconUrl: null,
+            primaryColor: '#667eea',
+            widgetCode: ''
+        };
 
-        function getPlanGreeting(planId) {
-            const greetings = {
-                'plan1': 'Hello 1$',
-                'plan2': 'Hello 2$',
-                'plan3': 'Hello 3$'
-            };
-            return greetings[planId] || 'Hello!';
-        }
-
-        function getPlanName(planId) {
-            const plans = {
-                'plan1': 'Plan 1 ($1)',
-                'plan2': 'Plan 2 ($2)',
-                'plan3': 'Plan 3 ($3)'
-            };
-            return plans[planId] || 'No plan selected';
-        }
-
-        function logout() {
-            localStorage.removeItem('authToken');
-        }
-
-        async function loadUserData() {
+        // Load user info
+        async function loadUserInfo() {
             try {
-                const token = localStorage.getItem('authToken') || new URLSearchParams(window.location.search).get('token');
-
+                const token = localStorage.getItem('authToken');
                 if (!token) {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('error').style.display = 'block';
+                    window.location.href = '/pricing.html';
                     return;
-                }
-
-                if (token && !localStorage.getItem('authToken')) {
-                    localStorage.setItem('authToken', token);
                 }
 
                 const response = await fetch(`${API_URL}/auth/me`, {
@@ -154,29 +593,269 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch user data');
+                    window.location.href = '/pricing.html';
+                    return;
                 }
 
                 const data = await response.json();
                 const user = data.user;
 
+                const initial = user.name.charAt(0).toUpperCase();
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('profileInitial').textContent = initial;
                 document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userName').textContent = user.name;
-                document.getElementById('userPlan').textContent = getPlanName(user.pricePlan);
-                document.getElementById('greeting').textContent = getPlanGreeting(user.pricePlan);
+                document.getElementById('userGreeting').textContent = `Hi, ${user.name.split(' ')[0]}!`;
 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-
-                window.history.replaceState({}, document.title, window.location.pathname);
+                await loadConfig();
             } catch (error) {
-                console.error('Error loading user data:', error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
+                console.error('Error loading user info:', error);
+                window.location.href = '/pricing.html';
             }
         }
 
-        window.addEventListener('load', loadUserData);
+        // Load chatbot configuration
+        async function loadConfig() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/chatbot/config`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    currentConfig = await response.json();
+                    updatePreview();
+                    updateCodeSnippet();
+                }
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+
+        // Update preview
+        function updatePreview() {
+            const colorPreview = document.getElementById('colorPreview');
+            const chatbotIcon = document.getElementById('chatbotIcon');
+            const chatbotHeader = document.querySelector('.chatbot-header');
+            
+            colorPreview.style.background = currentConfig.primaryColor;
+            chatbotIcon.style.background = currentConfig.primaryColor;
+            chatbotHeader.style.background = `linear-gradient(135deg, ${currentConfig.primaryColor} 0%, ${adjustColor(currentConfig.primaryColor, -20)} 100%)`;
+
+            if (currentConfig.iconUrl) {
+                const iconImg = document.getElementById('chatbotIconText');
+                iconImg.style.display = 'none';
+                if (!chatbotIcon.querySelector('img')) {
+                    const img = document.createElement('img');
+                    img.src = currentConfig.iconUrl;
+                    chatbotIcon.appendChild(img);
+                } else {
+                    chatbotIcon.querySelector('img').src = currentConfig.iconUrl;
+                }
+            } else {
+                const iconImg = document.getElementById('chatbotIconText');
+                iconImg.style.display = 'flex';
+                const img = chatbotIcon.querySelector('img');
+                if (img) img.remove();
+            }
+
+            document.getElementById('colorPicker').value = currentConfig.primaryColor;
+            document.getElementById('colorInput').value = currentConfig.primaryColor;
+        }
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+        }
+
+        // Update code snippet
+        function updateCodeSnippet() {
+            const code = currentConfig.widgetCode || generateDefaultCode();
+            document.getElementById('codeSnippet').textContent = code;
+        }
+
+        function generateDefaultCode() {
+            return `<script>
+  (function() {
+    var chatbot = document.createElement('div');
+    chatbot.id = 'ai-chatbot-widget';
+    document.body.appendChild(chatbot);
+    
+    var script = document.createElement('script');
+    script.src = '${API_URL}/widget.js';
+    script.async = true;
+    document.head.appendChild(script);
+  })();
+</script>`;
+        }
+
+        // Color picker handlers
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            document.getElementById('colorInput').value = e.target.value;
+            updateColor(e.target.value);
+        });
+
+        document.getElementById('colorInput').addEventListener('input', (e) => {
+            const color = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(color)) {
+                document.getElementById('colorPicker').value = color;
+                updateColor(color);
+            }
+        });
+
+        async function updateColor(color) {
+            currentConfig.primaryColor = color;
+            updatePreview();
+            await saveConfig();
+        }
+
+        // Icon upload handlers
+        const uploadArea = document.getElementById('uploadArea');
+        const iconFile = document.getElementById('iconFile');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        iconFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        async function handleFileUpload(file) {
+            const formData = new FormData();
+            formData.append('icon', file);
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/chatbot/upload-icon`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentConfig.iconUrl = data.iconUrl;
+                    document.getElementById('currentIcon').src = data.iconUrl;
+                    document.getElementById('currentIcon').style.display = 'block';
+                    updatePreview();
+                } else {
+                    alert('Failed to upload icon');
+                }
+            } catch (error) {
+                console.error('Error uploading icon:', error);
+                alert('Error uploading icon');
+            }
+        }
+
+        // Provider search
+        let providers = [];
+        async function loadProviders() {
+            try {
+                const response = await fetch(`${API_URL}/api/chatbot/providers`);
+                providers = await response.json();
+                displayProviders(providers);
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+
+        function displayProviders(providerList) {
+            const container = document.getElementById('providerIcons');
+            container.innerHTML = '';
+            
+            providerList.forEach(provider => {
+                const div = document.createElement('div');
+                div.className = 'provider-icon';
+                div.title = provider.name;
+                div.innerHTML = `<img src="${provider.icon}" alt="${provider.name}">`;
+                div.onclick = () => {
+                    window.location.href = provider.blogUrl;
+                };
+                container.appendChild(div);
+            });
+        }
+
+        document.getElementById('providerSearch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = providers.filter(p => p.name.toLowerCase().includes(query));
+            displayProviders(filtered);
+        });
+
+        // Copy code
+        function copyCode() {
+            const code = document.getElementById('codeSnippet').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                document.getElementById('copySuccess').classList.add('active');
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy Code';
+                    btn.classList.remove('copied');
+                    document.getElementById('copySuccess').classList.remove('active');
+                }, 2000);
+            });
+        }
+
+        // Save config
+        async function saveConfig() {
+            try {
+                const token = localStorage.getItem('authToken');
+                await fetch(`${API_URL}/api/chatbot/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        primaryColor: currentConfig.primaryColor,
+                        widgetCode: currentConfig.widgetCode
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving config:', error);
+            }
+        }
+
+        // Toggle chatbot popup
+        function toggleChatbot() {
+            document.getElementById('chatbotPopup').classList.toggle('active');
+        }
+
+        // Toggle user popup
+        function toggleUserPopup() {
+            document.getElementById('userPopup').classList.toggle('active');
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await loadUserInfo();
+            await loadProviders();
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Integration Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .step {
+            margin-bottom: 30px;
+        }
+
+        .step h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .step p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+        <h1>How to Integrate AI Chatbot into Shopify</h1>
+
+        <div class="step">
+            <h2>Step 1: Copy Your Widget Code</h2>
+            <p>Go to your dashboard and copy the integration code snippet.</p>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: Access Theme Editor</h2>
+            <p>In your Shopify admin, go to <strong>Online Store → Themes → Actions → Edit code</strong>.</p>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: Edit theme.liquid</h2>
+            <p>Open the <code>theme.liquid</code> file and find the closing <code>&lt;/body&gt;</code> tag. Paste your code snippet just before it.</p>
+            <div class="code-block">
+&lt;!-- Paste your chatbot code here --&gt;
+&lt;script&gt;
+  // Your code snippet
+&lt;/script&gt;
+&lt;/body&gt;
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>Step 4: Save and Publish</h2>
+            <p>Click "Save" and your chatbot will appear on all pages of your Shopify store.</p>
+        </div>
+    </div>
+</body>
+</html>
+
