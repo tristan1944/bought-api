@@ -228,19 +228,19 @@
                 <div class="plan-name">Plan 1</div>
                 <div class="plan-price">$1<span>/one-time</span></div>
                 <div class="plan-description">Basic plan with essential features</div>
-                <button class="btn-select" onclick="selectPlan('plan1')">Select Plan</button>
+                <button class="btn-select" onclick="selectPlan('plan1', this)">Select Plan</button>
             </div>
             <div class="pricing-card">
                 <div class="plan-name">Plan 2</div>
                 <div class="plan-price">$2<span>/one-time</span></div>
                 <div class="plan-description">Standard plan with more features</div>
-                <button class="btn-select" onclick="selectPlan('plan2')">Select Plan</button>
+                <button class="btn-select" onclick="selectPlan('plan2', this)">Select Plan</button>
             </div>
             <div class="pricing-card">
                 <div class="plan-name">Plan 3</div>
                 <div class="plan-price">$3<span>/one-time</span></div>
                 <div class="plan-description">Premium plan with all features</div>
-                <button class="btn-select" onclick="selectPlan('plan3')">Select Plan</button>
+                <button class="btn-select" onclick="selectPlan('plan3', this)">Select Plan</button>
             </div>
         </div>
     </div>
@@ -340,7 +340,7 @@
             }
         }
 
-        async function selectPlan(planId) {
+        async function selectPlan(planId, buttonElement) {
             try {
                 const token = await checkUserExists();
 
@@ -349,8 +349,13 @@
                     return;
                 }
 
-                const button = event.target;
+                const button = buttonElement || event?.target || document.querySelector(`button[onclick*="${planId}"]`);
+                if (!button) {
+                    throw new Error('Button not found');
+                }
+
                 button.disabled = true;
+                const originalText = button.textContent;
                 button.innerHTML = '<span class="loading"></span> Processing...';
 
                 const response = await fetch(`${API_URL}/api/stripe/create-checkout-session`, {
@@ -372,9 +377,11 @@
             } catch (error) {
                 console.error('Error selecting plan:', error);
                 showError(error.message || 'An error occurred. Please try again.');
-                const button = event.target;
-                button.disabled = false;
-                button.textContent = 'Select Plan';
+                const button = buttonElement || event?.target || document.querySelector(`button[onclick*="${planId}"]`);
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Select Plan';
+                }
             }
         }
 
