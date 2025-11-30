@@ -103,22 +103,20 @@ function updateColorPreview() {
 // Update header image
 function updateHeaderImage() {
     const preview = document.getElementById('headerImagePreview');
-    const headerIcon = document.getElementById('headerIcon');
+    const headerAvatar = document.getElementById('previewHeaderAvatar');
     
     if (currentConfig.headerImageUrl) {
         if (preview) {
             preview.src = currentConfig.headerImageUrl;
             preview.style.display = 'block';
         }
-        if (headerIcon) {
-            headerIcon.src = currentConfig.headerImageUrl;
-            headerIcon.style.display = 'block';
+        if (headerAvatar) {
+            headerAvatar.src = currentConfig.headerImageUrl;
         }
     } else {
         if (preview) preview.style.display = 'none';
-        if (headerIcon) {
-            headerIcon.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
-            headerIcon.style.display = 'block';
+        if (headerAvatar) {
+            headerAvatar.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
         }
     }
 }
@@ -126,22 +124,20 @@ function updateHeaderImage() {
 // Update agent image
 function updateAgentImage() {
     const preview = document.getElementById('agentImagePreview');
-    const agentImg = document.getElementById('agentPreviewImg');
+    const bannerAvatar = document.getElementById('previewBannerAvatar');
     
     if (currentConfig.agentImageUrl) {
         if (preview) {
             preview.src = currentConfig.agentImageUrl;
             preview.style.display = 'block';
         }
-        if (agentImg) {
-            agentImg.src = currentConfig.agentImageUrl;
-            agentImg.style.display = 'block';
+        if (bannerAvatar) {
+            bannerAvatar.src = currentConfig.agentImageUrl;
         }
     } else {
         if (preview) preview.style.display = 'none';
-        if (agentImg) {
-            agentImg.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
-            agentImg.style.display = 'block';
+        if (bannerAvatar) {
+            bannerAvatar.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
         }
     }
 }
@@ -149,39 +145,57 @@ function updateAgentImage() {
 // Update banner image
 function updateBannerImage() {
     const preview = document.getElementById('bannerImagePreview');
-    const bannerSection = document.getElementById('chatbotBanner');
+    const bannerImage = document.getElementById('previewBannerImage');
+    const banner = document.getElementById('previewBanner');
     
     if (currentConfig.bannerImageUrl) {
         if (preview) {
             preview.src = currentConfig.bannerImageUrl;
             preview.style.display = 'block';
         }
-        if (bannerSection) {
-            bannerSection.style.backgroundImage = `url(${currentConfig.bannerImageUrl})`;
-            bannerSection.style.backgroundSize = 'cover';
-            bannerSection.style.backgroundPosition = 'center';
+        if (bannerImage) {
+            bannerImage.src = currentConfig.bannerImageUrl;
+            bannerImage.style.display = 'block';
+        }
+        if (banner) {
+            banner.style.background = 'transparent';
         }
     } else {
         if (preview) preview.style.display = 'none';
-        if (bannerSection) {
-            bannerSection.style.backgroundImage = 'none';
-            bannerSection.style.background = '#f9f9f9';
+        if (bannerImage) {
+            bannerImage.style.display = 'none';
+        }
+        if (banner) {
+            banner.style.background = '#f9fafb';
         }
     }
 }
 
 // Update chatbot widget
 function updateChatbotWidget() {
-    const launcherIcon = document.getElementById('launcherIcon');
-    const launcherChevron = document.getElementById('launcherChevron');
+    const launcherIcon = document.getElementById('previewLauncherIcon');
+    const launcherDefault = document.getElementById('previewLauncherDefault');
+    const launcher = document.getElementById('previewLauncher');
+    const header = document.getElementById('previewHeader');
     
-    if (currentConfig.iconUrl) {
+    // Update launcher icon
+    if (currentConfig.iconUrl && launcherIcon) {
         launcherIcon.src = currentConfig.iconUrl;
         launcherIcon.style.display = 'block';
-        if (launcherChevron) launcherChevron.style.display = 'block';
+        if (launcherDefault) launcherDefault.style.display = 'none';
     } else {
-        launcherIcon.style.display = 'none';
-        if (launcherChevron) launcherChevron.style.display = 'block';
+        if (launcherIcon) launcherIcon.style.display = 'none';
+        if (launcherDefault) launcherDefault.style.display = 'block';
+    }
+    
+    // Update colors
+    if (currentConfig.primaryColor) {
+        if (launcher) {
+            launcher.style.background = currentConfig.primaryColor;
+        }
+        if (header) {
+            header.style.borderBottomColor = currentConfig.primaryColor;
+        }
     }
 }
 
@@ -280,13 +294,16 @@ setupImageUpload('bannerImageFile', 'upload-banner-image', 'bannerImagePreview',
 
 // Banner text handlers
 document.getElementById('bannerHeaderInput').addEventListener('input', (e) => {
-    document.getElementById('bannerHeaderPreview').textContent = e.target.value;
-    document.getElementById('bannerHeaderText').textContent = e.target.value;
+    const value = e.target.value;
+    document.getElementById('previewBannerTitle').textContent = value;
+    document.getElementById('previewHeaderTitle').textContent = value;
+    document.getElementById('bannerHeaderText').textContent = value;
 });
 
 document.getElementById('bannerDescriptionInput').addEventListener('input', (e) => {
-    document.getElementById('bannerDescPreview').textContent = e.target.value;
-    document.getElementById('bannerDescriptionText').textContent = e.target.value;
+    const value = e.target.value;
+    document.getElementById('previewBannerDescription').textContent = value;
+    document.getElementById('bannerDescriptionText').textContent = value;
 });
 
 // Toggle handlers
@@ -400,13 +417,9 @@ async function saveConfig() {
 
 // Toggle chatbot popup
 function toggleChatbot() {
-    const window = document.getElementById('chatbotWindow');
-    if (window.style.display === 'none' || !window.style.display) {
-        window.style.display = 'flex';
-        window.classList.add('active');
-    } else {
-        window.style.display = 'none';
-        window.classList.remove('active');
+    const chatWindow = document.getElementById('previewChatWindow');
+    if (chatWindow) {
+        chatWindow.classList.toggle('open');
     }
 }
 

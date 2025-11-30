@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Configuration - Voiceflow Style</title>
+    <title>Chatbot Configuration</title>
     <style>
         /* Inline CSS for immediate loading */
     </style>
@@ -147,135 +147,62 @@
         <div class="right-panel">
             <h2 class="section-title">Live Preview</h2>
             <div class="preview-area">
-                <!-- Voiceflow Style Chatbot Widget Preview -->
-                <div class="vfrc-launcher__container" id="chatbotLauncherContainer" style="right: 20px; bottom: 20px;">
-                    <button title="Test your agent" class="vfrc-button vfrc-launcher vfrc-launcher--with-label" id="chatbotLauncher" onclick="toggleChatbot()">
-                        <div class="vfrc-launcher--media">
-                            <img id="launcherIcon" src="" alt="open chat" class="vfrc-launcher--media-icon" style="display: none;">
-                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="vfrc-launcher__chevron" id="launcherChevron">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.29289 13.2929C8.68342 12.9024 9.31658 12.9024 9.70711 13.2929L16 19.5858L22.2929 13.2929C22.6834 12.9024 23.3166 12.9024 23.7071 13.2929C24.0976 13.6834 24.0976 14.3166 23.7071 14.7071L16.7071 21.7071C16.3166 22.0976 15.6834 22.0976 15.2929 21.7071L8.29289 14.7071C7.90237 14.3166 7.90237 13.6834 8.29289 13.2929Z" fill="currentColor"></path>
-                            </svg>
-                        </div>
-                        <div class="vfrc-launcher__label" id="launcherLabel">Test your agent</div>
+                <!-- Custom Chatbot Widget Preview -->
+                <div class="preview-widget-container">
+                    <!-- Launcher Button -->
+                    <button class="preview-launcher" id="previewLauncher" onclick="toggleChatbot()">
+                        <img id="previewLauncherIcon" src="" alt="Chat" class="preview-launcher-icon" style="display: none;">
+                        <svg class="preview-launcher-default" id="previewLauncherDefault" width="32" height="32" viewBox="0 0 24 24" fill="white">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                        </svg>
                     </button>
-                </div>
-                
-                <div class="vfrc-chat__container" id="chatbotWindow" style="right: 20px; bottom: 76px; height: 600px; display: none;">
-                    <div class="vfrc-chat__container-inner" id="chatbotContainerInner">
-                        <div class="vfrc-chat">
-                            <div class="vfrc-header" id="chatbotHeader">
-                                <img id="headerIcon" src="https://cdn.voiceflow.com/widget-next/vf_chat.png" alt="system agent avatar" class="vfrc-avatar">
-                                <div class="vfrc-header--container-inner">
-                                    <div class="vfrc-header--title" id="headerTitle">Your AI agent</div>
-                                    <div class="vfrc-header--actions">
-                                        <button title="Your AI agent" class="vfrc-button vfrc-header--button">
-                                            <div class="vfrc-icon vfrc-header--icon">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.4489 6.04084C17.1346 5.7711 16.6611 5.80726 16.3914 6.12161C16.1216 6.43596 16.1578 6.90945 16.4721 7.17919C17.6708 8.20779 18.5 9.96134 18.5 12.0033C18.5 14.0421 17.6723 15.7945 16.4753 16.8241C16.1613 17.0941 16.1256 17.5677 16.3957 17.8817C16.6658 18.1958 17.1394 18.2314 17.4534 17.9613C19.016 16.6174 20 14.4319 20 12.0033C20 9.57153 19.0144 7.38413 17.4489 6.04084ZM9.87746 6.28051C10.861 5.44629 12.3684 6.14735 12.3684 7.43504V16.567C12.3684 17.8552 10.8614 18.5554 9.87746 17.7215L7.05067 15.3267H5.51316C4.67768 15.3267 4 14.649 4 13.8135V10.1885C4 9.35304 4.67768 8.67536 5.51316 8.67536H7.05067L9.87746 6.28051ZM10.853 7.42038C10.853 7.42038 10.85 7.42248 10.8477 7.42449L7.81046 9.9976C7.675 10.1124 7.50321 10.1754 7.32566 10.1754H5.51316C5.51015 10.1754 5.5085 10.1761 5.5085 10.1761C5.5085 10.1761 5.50574 10.1775 5.50394 10.1793C5.50213 10.1811 5.5007 10.1839 5.5007 10.1839C5.5007 10.1839 5.5 10.1855 5.5 10.1885V13.8135C5.5 13.8165 5.5007 13.8182 5.5007 13.8182C5.5007 13.8182 5.50213 13.8209 5.50394 13.8227C5.50574 13.8245 5.50849 13.826 5.50849 13.826C5.50849 13.826 5.51013 13.8267 5.51316 13.8267H7.32566C7.50321 13.8267 7.675 13.8897 7.81046 14.0044L10.8471 16.577C10.8498 16.5793 10.8532 16.5817 10.8532 16.5817C10.8532 16.5817 10.8574 16.5808 10.8609 16.5792C10.8645 16.5775 10.868 16.5747 10.868 16.5747C10.868 16.5747 10.8684 16.5707 10.8684 16.567V7.43504C10.8684 7.43143 10.868 7.42748 10.868 7.42748C10.868 7.42748 10.8645 7.42459 10.8607 7.42284C10.8573 7.42126 10.853 7.42038 10.853 7.42038ZM14.0645 8.56575C14.285 8.21515 14.748 8.10972 15.0986 8.33029C16.2391 9.04771 16.9474 10.457 16.9474 12.0048C16.9474 13.5516 16.2395 14.9628 15.0951 15.6738C14.7433 15.8925 14.2808 15.7845 14.0622 15.4326C13.8436 15.0808 13.9516 14.6184 14.3035 14.3998C14.9326 14.0088 15.4474 13.1275 15.4474 12.0048C15.4474 10.883 14.9331 9.99826 14.2999 9.59995C13.9493 9.37938 13.8439 8.91636 14.0645 8.56575Z" fill="currentColor"></path>
-                                                </svg>
-                                            </div>
-                                        </button>
-                                        <button title="Your AI agent" class="vfrc-button vfrc-header--button" onclick="toggleChatbot()">
-                                            <div class="vfrc-icon vfrc-header--icon">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.75 5C5.75 4.58579 5.41421 4.25 5 4.25C4.58579 4.25 4.25 4.58579 4.25 5V9.308C4.25 9.72221 4.58579 10.058 5 10.058H5.52062C5.53202 10.0583 5.5434 10.0583 5.55476 10.058H9.308C9.72221 10.058 10.058 9.72221 10.058 9.308C10.058 8.89379 9.72221 8.558 9.308 8.558H6.7837C7.90235 6.86511 9.82106 5.75 12 5.75C15.4518 5.75 18.25 8.54821 18.25 12C18.25 15.4518 15.4518 18.25 12 18.25C9.40138 18.25 7.17289 16.664 6.23022 14.4033C6.0708 14.021 5.63164 13.8404 5.24934 13.9998C4.86703 14.1592 4.68635 14.5983 4.84577 14.9807C6.0131 17.78 8.77461 19.75 12 19.75C16.2802 19.75 19.75 16.2802 19.75 12C19.75 7.71979 16.2802 4.25 12 4.25C9.43283 4.25 7.15952 5.49797 5.75 7.41882V5Z" fill="currentColor"></path>
-                                                </svg>
-                                            </div>
-                                        </button>
-                                        <button title="Your AI agent" class="vfrc-button vfrc-header--button" onclick="toggleChatbot()">
-                                            <div class="vfrc-icon vfrc-header--icon">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7478 7.31915C18.0496 7.01737 18.0496 6.5281 17.7478 6.22633C17.4461 5.92456 16.9568 5.92456 16.655 6.22633L12.2663 10.6151C12.1244 10.757 11.8943 10.757 11.7524 10.6151L7.36785 6.23053C7.06376 5.92644 6.57073 5.92644 6.26664 6.23053L6.22807 6.2691C5.92398 6.57319 5.92398 7.06622 6.22807 7.37032L10.6126 11.7548C10.7545 11.8968 10.7545 12.1268 10.6126 12.2688L6.24255 16.6388C5.94078 16.9406 5.94078 17.4298 6.24255 17.7316C6.54433 18.0334 7.0336 18.0334 7.33537 17.7316L11.7054 13.3616C11.8473 13.2197 12.0774 13.2197 12.2193 13.3616L16.6321 17.7744C16.9362 18.0785 17.4293 18.0785 17.7334 17.7744L17.7719 17.7358C18.076 17.4317 18.076 16.9387 17.7719 16.6346L13.3591 12.2218C13.2172 12.0799 13.2172 11.8498 13.3591 11.7079L17.7478 7.31915Z" fill="currentColor"></path>
-                                                </svg>
-                                            </div>
-                                        </button>
-                                    </div>
+                    
+                    <!-- Chat Window -->
+                    <div class="preview-chat-window" id="previewChatWindow">
+                        <!-- Header -->
+                        <div class="preview-header" id="previewHeader">
+                            <img id="previewHeaderAvatar" src="https://cdn.voiceflow.com/widget-next/vf_chat.png" alt="Agent" class="preview-header-avatar">
+                            <div class="preview-header-info">
+                                <h3 class="preview-header-title" id="previewHeaderTitle">Your AI agent</h3>
+                                <p class="preview-header-subtitle">Online</p>
+                            </div>
+                            <button class="preview-header-close" onclick="toggleChatbot()" aria-label="Close">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Banner -->
+                        <div class="preview-banner" id="previewBanner">
+                            <img id="previewBannerImage" src="" alt="" class="preview-banner-image" style="display: none;">
+                            <div class="preview-banner-content">
+                                <img id="previewBannerAvatar" src="https://cdn.voiceflow.com/widget-next/vf_chat.png" alt="Agent" class="preview-banner-avatar">
+                                <h2 class="preview-banner-title" id="previewBannerTitle">Your AI agent</h2>
+                                <p class="preview-banner-description" id="previewBannerDescription">How can I help you today?</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div class="preview-messages">
+                            <div class="preview-message">
+                                <div class="preview-message-bubble">
+                                    <p>Hi there! I'm an AI agent trained on docs, help articles, and other important content. How can I best help you today?</p>
                                 </div>
                             </div>
-                            <div class="vfrc-chat-dialog__container">
-                                <div class="vfrc-assistant-info" id="chatbotBanner">
-                                    <div class="vfrc-assistant-info--avatar-container">
-                                        <img id="agentPreviewImg" src="https://cdn.voiceflow.com/widget-next/vf_chat.png" alt="system agent avatar" class="vfrc-avatar vfrc-assistant-info--avatar">
-                                    </div>
-                                    <div class="vfrc-assistant-info--title" id="bannerHeaderPreview">Your AI agent</div>
-                                    <div class="vfrc-assistant-info--description" id="bannerDescPreview">How can I help you today?</div>
-                                </div>
-                                <div class="vfrc-chat--dialog vfrc-chat-dialog">
-                                    <div class="vfrc-system-response--container">
-                                        <div class="vfrc-system-response">
-                                            <div class="vfrc-message">
-                                                <div class="markdown">
-                                                    <p>Hi there! I'm an AI agent trained on docs, help articles, and other important content.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="vfrc-system-response">
-                                            <div class="vfrc-message">
-                                                <div class="markdown">
-                                                    <p>How can I best help you today?</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="vfrc-system-response--actions">
-                                            <div class="vfrc-system-response--action">
-                                                <button class="vfrc-button">Get started</button>
-                                            </div>
-                                            <div class="vfrc-system-response--action">
-                                                <button class="vfrc-button">See templates</button>
-                                            </div>
-                                            <div class="vfrc-system-response--action">
-                                                <button class="vfrc-button">Pricing</button>
-                                            </div>
-                                            <div class="vfrc-system-response--action">
-                                                <button class="vfrc-button">Book a demo</button>
-                                            </div>
-                                            <div class="vfrc-system-response--action">
-                                                <button class="vfrc-button">Documentation</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="vfrc-chat--bottom-spacer"></div>
-                                </div>
-                            </div>
-                            <div class="vfrc-footer">
-                                <div class="vfrc-footer__start-button">
-                                    <button class="vfrc-button">Start new chat</button>
-                                </div>
-                                <div class="vfrc-footer__content">
-                                    <div class="vfrc-footer__content-scroll-to-bottom">
-                                        <button class="vfrc-footer__content-scroll-to-bottom-button">
-                                            <div>
-                                                <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg" title="scroll">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 11.75C16.5 11.3358 16.1642 11 15.75 11C15.3358 11 15 11.3358 15 11.75V18.6487L13.2302 17.1738C12.9119 16.9087 12.439 16.9517 12.1739 17.2699C11.9087 17.5881 11.9517 18.061 12.2699 18.3262L15.2699 20.8262C15.548 21.0579 15.952 21.0579 16.2302 20.8262L19.2302 18.3262C19.5484 18.061 19.5914 17.5881 19.3262 17.2699C19.061 16.9517 18.5881 16.9087 18.2699 17.1738L16.5 18.6487V11.75Z" fill="currentColor"></path>
-                                                </svg>
-                                            </div>
-                                        </button>
-                                    </div>
-                                    <div class="vfrc-input-container" tabindex="0">
-                                        <div class="vfrc-chat-focus-ring"></div>
-                                        <div class="vfrc-chat-input__container-inner">
-                                            <textarea placeholder="Message..." class="vfrc-chat-input" style="height: 23.5px !important;"></textarea>
-                                        </div>
-                                        <div class="vfrc-chat-input__actions">
-                                            <button title="Start dictation" class="vfrc-chat-input__audio-input">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" title="microphone" class="vfrc-chat-input__audio-input-icon">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.56574 7.41994C8.56574 5.53075 10.1046 4 12.0007 4C13.8967 4 15.4357 5.53075 15.4357 7.41994V11.6195C15.4357 13.5087 13.8967 15.0395 12.0007 15.0395C10.1046 15.0395 8.56574 13.5087 8.56574 11.6195V7.41994ZM12.0007 5.5C10.9356 5.5 10.0718 6.35999 10.0718 7.41994V11.6195C10.0718 12.6795 10.9356 13.5395 12.0007 13.5395C13.0658 13.5395 13.9296 12.6795 13.9296 11.6195V7.41994C13.9296 6.35999 13.0658 5.5 12.0007 5.5Z" fill="currentColor"></path>
-                                                    <path d="M6.25305 10.4868C6.66895 10.4868 7.0061 10.8225 7.0061 11.2368C7.0061 13.9837 9.24194 16.2105 12 16.2105C14.7581 16.2105 16.9939 13.9837 16.9939 11.2368C16.9939 10.8225 17.3311 10.4868 17.747 10.4868C18.1628 10.4868 18.5 10.8225 18.5 11.2368C18.5 14.5584 15.9882 17.2957 12.7531 17.6675V19.25C12.7531 19.6642 12.4159 20 12 20C11.5841 20 11.247 19.6642 11.247 19.25V17.6675C8.01185 17.2958 5.5 14.5584 5.5 11.2368C5.5 10.8225 5.83715 10.4868 6.25305 10.4868Z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                            <button id="vfrc-send-message" disabled="" title="Send" class="vfrc-chat-input__send">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" title="send" class="vfrc-chat-input__send-icon">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 16.25C12.5 16.6642 12.1642 17 11.75 17C11.3358 17 11 16.6642 11 16.25V9.35127L9.23016 10.8262C8.91195 11.0913 8.43903 11.0483 8.17385 10.7301C7.90868 10.4119 7.95167 9.939 8.26988 9.67383L11.2699 7.17383C11.548 6.94205 11.952 6.94205 12.2302 7.17383L15.2302 9.67383C15.5484 9.939 15.5914 10.4119 15.3262 10.7301C15.061 11.0483 14.5881 11.0913 14.2699 10.8262L12.5 9.35129V16.25Z" fill="currentColor"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="vfrc-footer__links">
-                                    <div class="vfrc-footer__links-powered-by-container">
-                                        <a rel="noreferrer" href="https://www.voiceflow.com" target="_blank" class="vfrc-footer__links-powered-by">Powered by Voiceflow</a>
-                                    </div>
-                                </div>
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="preview-input-area">
+                            <div class="preview-input-wrapper">
+                                <textarea class="preview-input" placeholder="Type a message..." rows="1"></textarea>
+                                <button class="preview-send-button" type="button" aria-label="Send">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -9,15 +9,25 @@ const { authenticateToken } = require('../middleware/auth');
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'public/uploads/icons';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    try {
+      const uploadDir = 'public/uploads/icons';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error);
     }
-    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `icon-${req.user.id}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    try {
+      // Use a fallback if user is not set (shouldn't happen with auth middleware, but safer)
+      const userId = (req.user && (req.user.id || req.user._id)) || 'anonymous';
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, `icon-${userId}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    } catch (error) {
+      cb(error);
+    }
   }
 });
 
@@ -34,6 +44,39 @@ const upload = multer({
     } else {
       cb(new Error('Only image files are allowed!'));
     }
+  }
+});
+
+// Get chatbot configuration (public endpoint for widget)
+router.get('/widget-config/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const config = await ChatbotConfig.findByUserId(userId);
+    
+    if (!config) {
+      return res.json({
+        iconUrl: null,
+        headerImageUrl: null,
+        agentImageUrl: null,
+        bannerImageUrl: null,
+        bannerHeader: 'Your AI agent',
+        bannerDescription: 'How can I help you today?',
+        primaryColor: '#667eea'
+      });
+    }
+
+    res.json({
+      iconUrl: config.iconUrl,
+      headerImageUrl: config.headerImageUrl,
+      agentImageUrl: config.agentImageUrl,
+      bannerImageUrl: config.bannerImageUrl,
+      bannerHeader: 'Your AI agent',
+      bannerDescription: 'How can I help you today?',
+      primaryColor: config.primaryColor || '#667eea'
+    });
+  } catch (error) {
+    console.error('Error fetching widget config:', error);
+    res.status(500).json({ error: 'Failed to fetch configuration' });
   }
 });
 
@@ -120,10 +163,22 @@ router.post('/upload-icon', authenticateToken, upload.single('icon'), async (req
 });
 
 // Upload header image
-router.post('/upload-header-image', authenticateToken, upload.single('image'), async (req, res) => {
+router.post('/upload-header-image', authenticateToken, (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('Multer error:', err);
+      return res.status(400).json({ error: err.message || 'File upload failed' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const imageUrl = `/uploads/icons/${req.file.filename}`;
@@ -139,7 +194,8 @@ router.post('/upload-header-image', authenticateToken, upload.single('image'), a
     });
   } catch (error) {
     console.error('Error uploading header image:', error);
-    res.status(500).json({ error: 'Failed to upload header image' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Failed to upload header image', details: error.message });
   }
 });
 
