@@ -479,60 +479,336 @@ input[type="text"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
-.chatbot-widget-container {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
+/* Voiceflow Launcher Styles */
+.vfrc-launcher__container {
+    position: absolute;
+    z-index: 1000;
 }
 
-.chatbot-launcher {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #667eea;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+.vfrc-launcher {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.5em;
-    z-index: 1000;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     transition: transform 0.2s;
+    font-family: inherit;
 }
 
-.chatbot-launcher:hover {
-    transform: scale(1.1);
+.vfrc-launcher:hover {
+    transform: scale(1.05);
 }
 
-.chatbot-launcher img {
-    width: 100%;
-    height: 100%;
+.vfrc-launcher--media {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vfrc-launcher--media-icon {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.chatbot-window {
-    position: fixed;
-    bottom: 100px;
-    right: 30px;
+.vfrc-launcher__chevron {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+}
+
+.vfrc-launcher__label {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Voiceflow Chat Container Styles */
+.vfrc-chat__container {
+    position: absolute;
     width: 380px;
-    height: 600px;
+    max-height: 600px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    display: none;
+    display: flex;
     flex-direction: column;
     overflow: hidden;
     z-index: 999;
 }
 
-.chatbot-window.active {
+.vfrc-chat__container.active {
     display: flex;
+}
+
+.vfrc-chat__container-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #E5EEFF;
+}
+
+.vfrc-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+}
+
+/* Header */
+.vfrc-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #667eea;
+    color: white;
+}
+
+.vfrc-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.vfrc-header--container-inner {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vfrc-header--title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.vfrc-header--actions {
+    display: flex;
+    gap: 4px;
+}
+
+.vfrc-header--button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.vfrc-header--button:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.vfrc-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Assistant Info (Banner) */
+.vfrc-assistant-info {
+    padding: 20px;
+    background: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.vfrc-assistant-info--avatar-container {
+    margin-bottom: 12px;
+}
+
+.vfrc-assistant-info--avatar {
+    width: 64px;
+    height: 64px;
+}
+
+.vfrc-assistant-info--title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.vfrc-assistant-info--description {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Chat Dialog */
+.vfrc-chat-dialog__container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.vfrc-system-response--container {
+    margin-bottom: 16px;
+}
+
+.vfrc-system-response {
+    margin-bottom: 12px;
+}
+
+.vfrc-message {
+    background: #f0f0f0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    max-width: 85%;
+}
+
+.vfrc-message p {
+    margin: 0;
+    color: #1a1a1a;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.vfrc-system-response--actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.vfrc-system-response--action {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.vfrc-system-response--action .vfrc-button {
+    background: #e8f0fe;
+    color: #1a73e8;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vfrc-system-response--action .vfrc-button:hover {
+    background: #d2e3fc;
+}
+
+.vfrc-chat--bottom-spacer {
+    height: 16px;
+}
+
+/* Footer */
+.vfrc-footer {
+    border-top: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    background: white;
+}
+
+.vfrc-footer__start-button {
+    margin-bottom: 8px;
+}
+
+.vfrc-footer__start-button .vfrc-button {
+    width: 100%;
+    padding: 10px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vfrc-footer__content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vfrc-input-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 24px;
+    padding: 8px 12px;
+    background: white;
+}
+
+.vfrc-chat-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    resize: none;
+    font-family: inherit;
+    background: transparent;
+}
+
+.vfrc-chat-input__actions {
+    display: flex;
+    gap: 4px;
+}
+
+.vfrc-chat-input__audio-input,
+.vfrc-chat-input__send {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vfrc-chat-input__send {
+    color: #667eea;
+}
+
+.vfrc-footer__links {
+    margin-top: 8px;
+    text-align: center;
+}
+
+.vfrc-footer__links-powered-by {
+    font-size: 12px;
+    color: #999;
+    text-decoration: none;
+}
+
+.vfrc-footer__links-powered-by:hover {
+    text-decoration: underline;
+}
+
+.vfrc-button {
+    font-family: inherit;
+    cursor: pointer;
 }
 
 .chatbot-window-header {

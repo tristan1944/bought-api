@@ -76,12 +76,25 @@ function updateAllPreviews() {
 // Update color preview
 function updateColorPreview() {
     const colorPreview = document.getElementById('colorPreviewBox');
-    const chatbotHeader = document.querySelector('.chatbot-window-header');
+    const chatbotHeader = document.querySelector('.vfrc-header');
     const chatbotLauncher = document.getElementById('chatbotLauncher');
+    const containerInner = document.getElementById('chatbotContainerInner');
     
     if (colorPreview) colorPreview.style.background = currentConfig.primaryColor;
     if (chatbotHeader) chatbotHeader.style.background = currentConfig.primaryColor;
     if (chatbotLauncher) chatbotLauncher.style.background = currentConfig.primaryColor;
+    
+    // Update CSS variables for color palette
+    if (containerInner) {
+        const color = currentConfig.primaryColor;
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        
+        // Generate color palette shades
+        containerInner.style.setProperty('--_1bof89n0', `rgb(${Math.min(255, r + 30)}, ${Math.min(255, g + 30)}, ${Math.min(255, b + 30)})`);
+        containerInner.style.setProperty('--_1bof89n5', color);
+    }
     
     document.getElementById('colorPicker').value = currentConfig.primaryColor;
     document.getElementById('colorInput').value = currentConfig.primaryColor;
@@ -100,13 +113,12 @@ function updateHeaderImage() {
         if (headerIcon) {
             headerIcon.src = currentConfig.headerImageUrl;
             headerIcon.style.display = 'block';
-            document.getElementById('headerIconFallback').style.display = 'none';
         }
     } else {
         if (preview) preview.style.display = 'none';
         if (headerIcon) {
-            headerIcon.style.display = 'none';
-            document.getElementById('headerIconFallback').style.display = 'inline';
+            headerIcon.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
+            headerIcon.style.display = 'block';
         }
     }
 }
@@ -124,13 +136,12 @@ function updateAgentImage() {
         if (agentImg) {
             agentImg.src = currentConfig.agentImageUrl;
             agentImg.style.display = 'block';
-            document.getElementById('agentAvatarFallback').style.display = 'none';
         }
     } else {
         if (preview) preview.style.display = 'none';
         if (agentImg) {
-            agentImg.style.display = 'none';
-            document.getElementById('agentAvatarFallback').style.display = 'flex';
+            agentImg.src = 'https://cdn.voiceflow.com/widget-next/vf_chat.png';
+            agentImg.style.display = 'block';
         }
     }
 }
@@ -157,17 +168,16 @@ function updateBannerImage() {
 
 // Update chatbot widget
 function updateChatbotWidget() {
-    const launcher = document.getElementById('chatbotLauncher');
     const launcherIcon = document.getElementById('launcherIcon');
+    const launcherChevron = document.getElementById('launcherChevron');
     
     if (currentConfig.iconUrl) {
         launcherIcon.src = currentConfig.iconUrl;
         launcherIcon.style.display = 'block';
-        document.getElementById('launcherEmoji').style.display = 'none';
-        document.getElementById('launcherText').style.display = 'none';
+        if (launcherChevron) launcherChevron.style.display = 'block';
     } else {
         launcherIcon.style.display = 'none';
-        document.getElementById('launcherEmoji').style.display = 'inline';
+        if (launcherChevron) launcherChevron.style.display = 'block';
     }
 }
 
@@ -386,7 +396,14 @@ async function saveConfig() {
 
 // Toggle chatbot popup
 function toggleChatbot() {
-    document.getElementById('chatbotWindow').classList.toggle('active');
+    const window = document.getElementById('chatbotWindow');
+    if (window.style.display === 'none' || !window.style.display) {
+        window.style.display = 'flex';
+        window.classList.add('active');
+    } else {
+        window.style.display = 'none';
+        window.classList.remove('active');
+    }
 }
 
 // Toggle user popup
