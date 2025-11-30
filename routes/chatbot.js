@@ -45,6 +45,9 @@ router.get('/config', authenticateToken, async (req, res) => {
     if (!config) {
       return res.json({
         iconUrl: null,
+        headerImageUrl: null,
+        agentImageUrl: null,
+        bannerImageUrl: null,
         primaryColor: '#667eea',
         widgetCode: generateWidgetCode(req.user.id)
       });
@@ -52,6 +55,9 @@ router.get('/config', authenticateToken, async (req, res) => {
 
     res.json({
       iconUrl: config.iconUrl,
+      headerImageUrl: config.headerImageUrl,
+      agentImageUrl: config.agentImageUrl,
+      bannerImageUrl: config.bannerImageUrl,
       primaryColor: config.primaryColor,
       widgetCode: config.widgetCode || generateWidgetCode(req.user.id)
     });
@@ -64,16 +70,22 @@ router.get('/config', authenticateToken, async (req, res) => {
 // Update chatbot configuration
 router.post('/config', authenticateToken, async (req, res) => {
   try {
-    const { primaryColor, widgetCode } = req.body;
+    const { primaryColor, widgetCode, headerImageUrl, agentImageUrl, bannerImageUrl } = req.body;
 
     const config = await ChatbotConfig.upsert({
       userId: req.user.id,
       primaryColor: primaryColor,
-      widgetCode: widgetCode
+      widgetCode: widgetCode,
+      headerImageUrl: headerImageUrl,
+      agentImageUrl: agentImageUrl,
+      bannerImageUrl: bannerImageUrl
     });
 
     res.json({
       iconUrl: config.iconUrl,
+      headerImageUrl: config.headerImageUrl,
+      agentImageUrl: config.agentImageUrl,
+      bannerImageUrl: config.bannerImageUrl,
       primaryColor: config.primaryColor,
       widgetCode: config.widgetCode
     });
@@ -83,7 +95,7 @@ router.post('/config', authenticateToken, async (req, res) => {
   }
 });
 
-// Upload icon
+// Upload icon (launcher icon)
 router.post('/upload-icon', authenticateToken, upload.single('icon'), async (req, res) => {
   try {
     if (!req.file) {
@@ -104,6 +116,78 @@ router.post('/upload-icon', authenticateToken, upload.single('icon'), async (req
   } catch (error) {
     console.error('Error uploading icon:', error);
     res.status(500).json({ error: 'Failed to upload icon' });
+  }
+});
+
+// Upload header image
+router.post('/upload-header-image', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/icons/${req.file.filename}`;
+
+    const config = await ChatbotConfig.upsert({
+      userId: req.user.id,
+      headerImageUrl: imageUrl
+    });
+
+    res.json({
+      headerImageUrl: config.headerImageUrl,
+      message: 'Header image uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Error uploading header image:', error);
+    res.status(500).json({ error: 'Failed to upload header image' });
+  }
+});
+
+// Upload agent image
+router.post('/upload-agent-image', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/icons/${req.file.filename}`;
+
+    const config = await ChatbotConfig.upsert({
+      userId: req.user.id,
+      agentImageUrl: imageUrl
+    });
+
+    res.json({
+      agentImageUrl: config.agentImageUrl,
+      message: 'Agent image uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Error uploading agent image:', error);
+    res.status(500).json({ error: 'Failed to upload agent image' });
+  }
+});
+
+// Upload banner image
+router.post('/upload-banner-image', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/icons/${req.file.filename}`;
+
+    const config = await ChatbotConfig.upsert({
+      userId: req.user.id,
+      bannerImageUrl: imageUrl
+    });
+
+    res.json({
+      bannerImageUrl: config.bannerImageUrl,
+      message: 'Banner image uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Error uploading banner image:', error);
+    res.status(500).json({ error: 'Failed to upload banner image' });
   }
 });
 
