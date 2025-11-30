@@ -149,20 +149,24 @@ function updateAgentImage() {
 // Update banner image
 function updateBannerImage() {
     const preview = document.getElementById('bannerImagePreview');
-    const bannerImg = document.getElementById('bannerPreviewImg');
+    const bannerSection = document.getElementById('chatbotBanner');
     
     if (currentConfig.bannerImageUrl) {
         if (preview) {
             preview.src = currentConfig.bannerImageUrl;
             preview.style.display = 'block';
         }
-        if (bannerImg) {
-            bannerImg.src = currentConfig.bannerImageUrl;
-            bannerImg.style.display = 'block';
+        if (bannerSection) {
+            bannerSection.style.backgroundImage = `url(${currentConfig.bannerImageUrl})`;
+            bannerSection.style.backgroundSize = 'cover';
+            bannerSection.style.backgroundPosition = 'center';
         }
     } else {
         if (preview) preview.style.display = 'none';
-        if (bannerImg) bannerImg.style.display = 'none';
+        if (bannerSection) {
+            bannerSection.style.backgroundImage = 'none';
+            bannerSection.style.background = '#f9f9f9';
+        }
     }
 }
 
