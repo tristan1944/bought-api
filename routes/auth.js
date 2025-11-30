@@ -4,10 +4,22 @@ const passport = require('../config/passport');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(500).json({ 
+      error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.' 
+    });
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
 router.get('/google/callback',
-  passport.authenticate('google', { session: false }),
+  (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.redirect(`${process.env.FRONTEND_URL || ''}/pricing.html?error=oauth_not_configured`);
+    }
+    passport.authenticate('google', { session: false })(req, res, next);
+  },
   async (req, res) => {
     try {
       const token = jwt.sign(
