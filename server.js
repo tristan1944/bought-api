@@ -65,6 +65,10 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 
+app.get('/', (req, res) => {
+  res.redirect('/pricing.html');
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
