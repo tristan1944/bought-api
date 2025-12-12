@@ -15,7 +15,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+
+// Serve uploaded customizations
+app.use('/uploads', express.static('public/uploads'));
+
+// Redirect old dashboard.html to new React dashboard (before static middleware)
+app.get('/dashboard.html', (req, res) => {
+  res.redirect('/dashboard');
+});
+
 app.use(express.static('public'));
+app.use('/dashboard', express.static('public/dashboard'));
 
 // Stripe webhook must be before express.json() middleware
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -34,15 +44,54 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
     const userId = session.metadata.userId;
     const planId = session.metadata.planId;
 
+    console.log(`[Stripe Webhook] checkout.session.completed received:`, {
+      userId,
+      planId,
+      sessionId: session.id
+    });
+
     try {
       const user = await User.findById(userId);
       if (user) {
         user.pricePlan = planId;
         await user.save();
-        console.log(`User ${user.email} subscribed to ${planId}`);
+        console.log(`[Stripe Webhook] User ${user.email} plan updated to ${planId}`);
+
+        // Sync credentials with admin-api (this assigns credentials in pending_customization)
+        const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3001';
+        console.log(`[Stripe Webhook] Calling admin-api sync for ${user.email} with plan ${planId}`);
+        
+        try {
+          const syncResponse = await fetch(`${adminApiUrl}/api/plans/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              plan_type: planId,
+              // Purchases should enter pending_customization queue
+              is_plan_change: true
+            }),
+          });
+
+          if (syncResponse.ok) {
+            const syncData = await syncResponse.json();
+            console.log(`[Stripe Webhook] ✅ Credentials synced successfully:`, {
+              credentialId: syncData.credential_id,
+              planType: syncData.plan_type
+            });
+          } else {
+            const errorData = await syncResponse.text();
+            console.error(`[Stripe Webhook] ❌ Admin API sync failed:`, {
+              status: syncResponse.status,
+              error: errorData
+            });
+          }
+        } catch (syncError) {
+          console.error(`[Stripe Webhook] ❌ Error calling admin-api:`, syncError.message);
+        }
       }
     } catch (error) {
-      console.error('Error updating user plan:', error);
+      console.error('[Stripe Webhook] Error updating user plan:', error);
     }
   }
 
@@ -66,9 +115,28 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/customizations', require('./routes/customizations'));
 
 app.get('/', (req, res) => {
   res.redirect('/pricing.html');
+});
+
+// Dashboard route - serve React app
+app.get('/dashboard', (req, res) => {
+  res.sendFile('dashboard/index.html', { root: 'public' });
+});
+
+app.get('/dashboard/', (req, res) => {
+  res.sendFile('dashboard/index.html', { root: 'public' });
+});
+
+// Login and Register routes
+app.get('/login', (req, res) => {
+  res.sendFile('login.html', { root: 'public' });
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile('register.html', { root: 'public' });
 });
 
 app.get('/health', (req, res) => {
