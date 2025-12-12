@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const fs = require('fs');
+const path = require('path');
 const connectDB = require('./config/database');
 const passport = require('./config/passport');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -29,7 +31,27 @@ const chatbotRoutes = require('./routes/chatbot');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy headers (needed on Render so req.protocol matches X-Forwarded-Proto)
+app.set('trust proxy', 1);
+
 app.use(cors());
+
+// Download helper for customization uploads
+// Allows downloading via: /uploads/customizations/<file>?download=1
+// Must be declared before the static /uploads middleware.
+app.get('/uploads/customizations/:filename', (req, res, next) => {
+  const download = req.query.download === '1' || req.query.download === 'true';
+  if (!download) return next();
+
+  const filename = path.basename(String(req.params.filename || ''));
+  const filePath = path.join(__dirname, 'public', 'uploads', 'customizations', filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('File not found');
+  }
+
+  return res.download(filePath, filename);
+});
 
 // Serve uploaded customizations
 app.use('/uploads', express.static('public/uploads'));
