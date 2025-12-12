@@ -242,22 +242,12 @@ export function ConfigurationPanel({ config, updateConfig }: ConfigurationPanelP
           <button
             onClick={handleFinalize}
             disabled={!isCustomizationComplete() || isFinalizing}
-            className={`w-full px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-              isCustomizationComplete() && !isFinalizing
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            className="w-full px-6 py-3 rounded-lg font-medium bg-gray-400 text-gray-700 cursor-pointer hover:bg-gray-500 transition-all flex items-center justify-center"
           >
             {isFinalizing ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Finalizing...</span>
-              </>
+              <span>Submitting...</span>
             ) : (
-              <>
-                <Check className="size-5" />
-                <span>Done</span>
-              </>
+              <span>Done</span>
             )}
           </button>
           {!isCustomizationComplete() && (
