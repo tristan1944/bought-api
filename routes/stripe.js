@@ -4,6 +4,21 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const { authenticateToken } = require('../middleware/auth');
 
+function mapBoughtPlanToAdminPlanType(planId) {
+  // bought-api uses plan1/plan2/plan3 internally.
+  // admin-api uses starter/essential/pro plan types.
+  switch (planId) {
+    case 'plan1':
+      return 'starter-monthly';
+    case 'plan2':
+      return 'essential-monthly';
+    case 'plan3':
+      return 'pro-monthly';
+    default:
+      return null;
+  }
+}
+
 const PRICE_PLANS = {
   plan1: {
     priceId: process.env.STRIPE_PRICE_ID_PLAN1,
@@ -149,7 +164,21 @@ router.post('/confirm-checkout-session', authenticateToken, async (req, res) => 
 
     // Sync credentials with admin-api (this assigns credentials in pending_customization)
     const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3001';
-    console.log(`[Stripe Confirm] Calling admin-api sync for ${req.user.email} with plan ${sessionPlanId}`);
+    const adminPlanType = mapBoughtPlanToAdminPlanType(sessionPlanId);
+    console.log(`[Stripe Confirm] Calling admin-api sync`, {
+      email: req.user.email,
+      boughtPlanId: sessionPlanId,
+      adminPlanType,
+      adminApiUrl,
+    });
+    if (!adminPlanType) {
+      console.error('[Stripe Confirm] ❌ Unknown plan id - cannot map to admin plan type:', sessionPlanId);
+      return res.json({
+        success: true,
+        planId: sessionPlanId,
+        warning: 'Plan saved, but could not map plan to admin plan type for credential assignment.',
+      });
+    }
     
     try {
       const syncResponse = await fetch(`${adminApiUrl}/api/plans/sync`, {
@@ -157,7 +186,7 @@ router.post('/confirm-checkout-session', authenticateToken, async (req, res) => 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: req.user.email,
-          plan_type: sessionPlanId,
+          plan_type: adminPlanType,
           // Purchases should enter pending_customization queue
           is_plan_change: true
         }),

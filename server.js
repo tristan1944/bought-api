@@ -7,6 +7,21 @@ const passport = require('./config/passport');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('./models/User');
 
+function mapBoughtPlanToAdminPlanType(planId) {
+  // bought-api uses plan1/plan2/plan3 internally.
+  // admin-api uses starter/essential/pro plan types.
+  switch (planId) {
+    case 'plan1':
+      return 'starter-monthly';
+    case 'plan2':
+      return 'essential-monthly';
+    case 'plan3':
+      return 'pro-monthly';
+    default:
+      return null;
+  }
+}
+
 const authRoutes = require('./routes/auth');
 const stripeRoutes = require('./routes/stripe');
 const chatbotRoutes = require('./routes/chatbot');
@@ -59,7 +74,17 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
         // Sync credentials with admin-api (this assigns credentials in pending_customization)
         const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3001';
-        console.log(`[Stripe Webhook] Calling admin-api sync for ${user.email} with plan ${planId}`);
+        const adminPlanType = mapBoughtPlanToAdminPlanType(planId);
+        console.log(`[Stripe Webhook] Calling admin-api sync`, {
+          email: user.email,
+          boughtPlanId: planId,
+          adminPlanType,
+          adminApiUrl,
+        });
+        if (!adminPlanType) {
+          console.error('[Stripe Webhook] ❌ Unknown plan id - cannot map to admin plan type:', planId);
+          return;
+        }
         
         try {
           const syncResponse = await fetch(`${adminApiUrl}/api/plans/sync`, {
@@ -67,7 +92,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: user.email,
-              plan_type: planId,
+              plan_type: adminPlanType,
               // Purchases should enter pending_customization queue
               is_plan_change: true
             }),
