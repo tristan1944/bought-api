@@ -1,5 +1,36 @@
+# Dependencies
 node_modules/
-.env
-.DS_Store
-*.log
 
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+
+# User uploads (generated)
+public/uploads/

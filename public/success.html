@@ -69,19 +69,39 @@
     <div class="container">
         <div class="success-icon">✓</div>
         <h1>Payment Successful!</h1>
-        <p>Thank you for your purchase. Your account has been updated with your selected plan.</p>
-        <a href="/dashboard.html" class="btn">Go to Dashboard</a>
+        <p>Thank you for your purchase. Finalizing your plan now…</p>
+        <a href="/dashboard" class="btn">Go to Dashboard</a>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const token = localStorage.getItem('authToken');
+        const sessionId = urlParams.get('session_id');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         
-        if (token) {
-            setTimeout(() => {
-                window.location.href = '/dashboard.html';
-            }, 2000);
+        async function finalizePlan() {
+            if (!token || !sessionId) return;
+            try {
+                await fetch('/api/stripe/confirm-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ sessionId }),
+                });
+            } catch (e) {
+                // Best-effort: even if this fails, user can still proceed.
+                console.warn('Plan confirmation failed:', e);
+            }
         }
+
+        // Confirm plan then redirect to dashboard
+        (async () => {
+            await finalizePlan();
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1500);
+        })();
     </script>
 </body>
 </html>

@@ -27,6 +27,7 @@ function mapBoughtPlanToAdminPlanType(planId) {
 const authRoutes = require('./routes/auth');
 const stripeRoutes = require('./routes/stripe');
 const chatbotRoutes = require('./routes/chatbot');
+const plansRoutes = require('./routes/plans');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -161,6 +162,7 @@ app.use(passport.session());
 
 app.use('/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/plans', plansRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/customizations', require('./routes/customizations'));
 

@@ -1,100 +1,120 @@
 const db = require('../config/database');
-const getPool = db.getPool;
+const bcrypt = require('bcryptjs');
+const getDB = db.getDB;
 
 class User {
   constructor(data) {
     this.id = data.id;
     this.email = data.email;
     this.name = data.name;
+    this.password = data.password;
     this.googleId = data.google_id;
     this.pricePlan = data.price_plan;
     this.stripeCustomerId = data.stripe_customer_id;
+    this.trialStartedAt = data.trial_started_at || null;
+    this.trialExpiresAt = data.trial_expires_at || null;
     this.createdAt = data.created_at;
     this._id = data.id; // For compatibility with existing code
   }
 
   static async findOne(query) {
-    const pool = getPool();
+    const database = getDB();
     let result;
 
     if (query.googleId) {
-      result = await pool.query(
-        'SELECT * FROM users WHERE google_id = $1',
-        [query.googleId]
-      );
+      result = database.prepare('SELECT * FROM users WHERE google_id = ?').get(query.googleId);
     } else if (query.email) {
-      result = await pool.query(
-        'SELECT * FROM users WHERE email = $1',
-        [query.email.toLowerCase()]
-      );
+      result = database.prepare('SELECT * FROM users WHERE email = ?').get(query.email.toLowerCase());
     } else if (query._id || query.id) {
       const id = query._id || query.id;
-      result = await pool.query(
-        'SELECT * FROM users WHERE id = $1',
-        [id]
-      );
+      result = database.prepare('SELECT * FROM users WHERE id = ?').get(id);
     } else {
       return null;
     }
 
-    if (result.rows.length === 0) {
+    if (!result) {
       return null;
     }
 
-    return new User(result.rows[0]);
+    return new User(result);
   }
 
   static async findById(id) {
-    const pool = getPool();
-    const result = await pool.query(
-      'SELECT * FROM users WHERE id = $1',
-      [id]
-    );
+    const database = getDB();
+    const result = database.prepare('SELECT * FROM users WHERE id = ?').get(id);
 
-    if (result.rows.length === 0) {
+    if (!result) {
       return null;
     }
 
-    return new User(result.rows[0]);
+    return new User(result);
   }
 
   static async create(data) {
-    const pool = getPool();
-    const result = await pool.query(
-      `INSERT INTO users (email, name, google_id, price_plan, stripe_customer_id)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [
-        data.email.toLowerCase(),
-        data.name,
-        data.googleId || null,
-        data.pricePlan || null,
-        data.stripeCustomerId || null
-      ]
+    const database = getDB();
+    let hashedPassword = null;
+    
+    if (data.password) {
+      hashedPassword = await bcrypt.hash(data.password, 10);
+    }
+
+    const stmt = database.prepare(`
+      INSERT INTO users (email, name, password, google_id, price_plan, stripe_customer_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      data.email.toLowerCase(),
+      data.name,
+      hashedPassword,
+      data.googleId || null,
+      data.pricePlan || null,
+      data.stripeCustomerId || null
     );
 
-    return new User(result.rows[0]);
+    // Get the created user
+    const result = database.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+    return new User(result);
+  }
+
+  async comparePassword(password) {
+    if (!this.password) {
+      return false;
+    }
+    return await bcrypt.compare(password, this.password);
   }
 
   async save() {
-    const pool = getPool();
-    const result = await pool.query(
-      `UPDATE users 
-       SET email = $1, name = $2, google_id = $3, price_plan = $4, stripe_customer_id = $5
-       WHERE id = $6
-       RETURNING *`,
-      [
-        this.email,
-        this.name,
-        this.googleId || null,
-        this.pricePlan || null,
-        this.stripeCustomerId || null,
-        this.id
-      ]
+    const database = getDB();
+    let hashedPassword = this.password;
+    
+    // If password is being updated and it's not already hashed, hash it
+    if (this.password && !this.password.startsWith('$2a$') && !this.password.startsWith('$2b$')) {
+      hashedPassword = await bcrypt.hash(this.password, 10);
+    }
+
+    const stmt = database.prepare(`
+      UPDATE users 
+      SET email = ?, name = ?, password = ?, google_id = ?, price_plan = ?, stripe_customer_id = ?, trial_started_at = ?, trial_expires_at = ?
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      this.email,
+      this.name,
+      hashedPassword,
+      this.googleId || null,
+      this.pricePlan || null,
+      this.stripeCustomerId || null,
+      this.trialStartedAt || null,
+      this.trialExpiresAt || null,
+      this.id
     );
 
-    if (result.rows.length > 0) {
-      Object.assign(this, new User(result.rows[0]));
+    // Get the updated user
+    const result = database.prepare('SELECT * FROM users WHERE id = ?').get(this.id);
+    if (result) {
+      Object.assign(this, new User(result));
     }
 
     return this;

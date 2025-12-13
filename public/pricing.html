@@ -199,6 +199,99 @@
             display: none;
         }
 
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .auth-form {
+            margin-top: 20px;
+        }
+
+        .form-group-modal {
+            margin-bottom: 15px;
+        }
+
+        .form-group-modal input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group-modal input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: opacity 0.3s;
+        }
+
+        .btn-auth:hover {
+            opacity: 0.9;
+        }
+
+        .btn-auth:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .auth-divider span {
+            background: white;
+            padding: 0 15px;
+            color: #666;
+            position: relative;
+        }
+
         .loading {
             display: inline-block;
             width: 20px;
@@ -212,6 +305,51 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Trial expired lock overlay */
+        #trialExpiredOverlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #trialExpiredOverlay .overlay-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 520px;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+        #trialExpiredOverlay .overlay-title {
+            font-size: 2.1em;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #trialExpiredOverlay .overlay-desc {
+            color: #666;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+        #trialExpiredOverlay .overlay-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 1.05em;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+        }
+        #trialExpiredOverlay .overlay-btn:hover {
+            opacity: 0.95;
+        }
     </style>
 </head>
 <body>
@@ -224,6 +362,12 @@
         </div>
         <div class="error-message" id="errorMessage"></div>
         <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="plan-name">7 day trial</div>
+                <div class="plan-price">$0<span>/free</span></div>
+                <div class="plan-description">Try it free for 7 days. One-time trial per account.</div>
+                <button id="trialPlanButton" class="btn-select" onclick="selectPlan('trial', this)">Start free trial</button>
+            </div>
             <div class="pricing-card">
                 <div class="plan-name">Plan 1</div>
                 <div class="plan-price">$1<span>/one-time</span></div>
@@ -245,21 +389,80 @@
         </div>
     </div>
 
+    <!-- Trial Expired Lock Screen -->
+    <div id="trialExpiredOverlay">
+        <div class="overlay-card">
+            <div class="overlay-title">Expired</div>
+            <div class="overlay-desc">
+                Your 7-day free trial has ended. Please upgrade to continue.
+            </div>
+            <button class="overlay-btn" onclick="hideTrialExpiredOverlay()">View plans</button>
+        </div>
+    </div>
+
     <div id="accountModal" class="modal">
         <div class="modal-content">
             <h2>Create an Account</h2>
             <p>You need to create an account to continue with your purchase.</p>
-            <a href="/auth/google" class="btn-google">
-                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg">
-                    <g fill="#000" fill-rule="evenodd">
-                        <path d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z" fill="#EA4335"/>
-                        <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.21 1.18-.84 2.18-1.79 2.91l2.73 2.12c1.63-1.5 2.74-3.7 2.74-6.53z" fill="#4285F4"/>
-                        <path d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.01 9.01 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z" fill="#FBBC05"/>
-                        <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.73-2.12c-.76.53-1.78.9-3.23.9-2.38 0-4.4-1.57-5.12-3.74L.96 13.04C2.45 15.98 5.48 18 9 18z" fill="#34A853"/>
-                    </g>
-                </svg>
-                Sign in with Google
-            </a>
+            
+            <!-- Tabs for Login/Register -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('register')">Sign Up</button>
+                <button class="auth-tab" onclick="switchAuthTab('login')">Sign In</button>
+            </div>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form" onsubmit="register(event); return false;">
+                <div class="form-group-modal">
+                    <input type="text" id="regName" name="name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group-modal">
+                    <input type="email" id="regEmail" name="email" placeholder="Email" required>
+                </div>
+                <div class="form-group-modal">
+                    <input type="password" id="regPassword" name="password" placeholder="Password (min 6 characters)" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-auth">Create Account</button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <a href="/auth/google" class="btn-google">
+                    <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                        <g fill="#000" fill-rule="evenodd">
+                            <path d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z" fill="#EA4335"/>
+                            <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.21 1.18-.84 2.18-1.79 2.91l2.73 2.12c1.63-1.5 2.74-3.7 2.74-6.53z" fill="#4285F4"/>
+                            <path d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.01 9.01 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z" fill="#FBBC05"/>
+                            <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.73-2.12c-.76.53-1.78.9-3.23.9-2.38 0-4.4-1.57-5.12-3.74L.96 13.04C2.45 15.98 5.48 18 9 18z" fill="#34A853"/>
+                        </g>
+                    </svg>
+                    Sign up with Google
+                </a>
+            </form>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form" style="display: none;" onsubmit="login(event); return false;">
+                <div class="form-group-modal">
+                    <input type="email" id="loginEmail" name="email" placeholder="Email" required>
+                </div>
+                <div class="form-group-modal">
+                    <input type="password" id="loginPassword" name="password" placeholder="Password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-auth">Sign In</button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <a href="/auth/google" class="btn-google">
+                    <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                        <g fill="#000" fill-rule="evenodd">
+                            <path d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z" fill="#EA4335"/>
+                            <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.21 1.18-.84 2.18-1.79 2.91l2.73 2.12c1.63-1.5 2.74-3.7 2.74-6.53z" fill="#4285F4"/>
+                            <path d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.01 9.01 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z" fill="#FBBC05"/>
+                            <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.73-2.12c-.76.53-1.78.9-3.23.9-2.38 0-4.4-1.57-5.12-3.74L.96 13.04C2.45 15.98 5.48 18 9 18z" fill="#34A853"/>
+                        </g>
+                    </svg>
+                    Sign in with Google
+                </a>
+            </form>
         </div>
     </div>
 
@@ -293,6 +496,7 @@
                 const token = localStorage.getItem('authToken');
                 if (!token) {
                     document.getElementById('userInfo').classList.remove('active');
+                    hideTrialExpiredOverlay();
                     return;
                 }
 
@@ -308,13 +512,71 @@
                     document.getElementById('userName').textContent = `Welcome, ${user.name}!`;
                     document.getElementById('userEmail').textContent = user.email;
                     document.getElementById('userInfo').classList.add('active');
+                    // Update trial button state
+                    updateTrialPlanButton(user);
+                    // Show expired lock overlay if trial is over and user has no paid plan
+                    if (user?.trial?.expired && !user?.pricePlan) {
+                        showTrialExpiredOverlay();
+                    } else {
+                        hideTrialExpiredOverlay();
+                    }
                 } else {
                     localStorage.removeItem('authToken');
                     document.getElementById('userInfo').classList.remove('active');
+                    updateTrialPlanButton(null);
+                    hideTrialExpiredOverlay();
                 }
             } catch (error) {
                 console.error('Error loading user info:', error);
                 document.getElementById('userInfo').classList.remove('active');
+                updateTrialPlanButton(null);
+                hideTrialExpiredOverlay();
+            }
+        }
+
+        function showTrialExpiredOverlay() {
+            const el = document.getElementById('trialExpiredOverlay');
+            if (el) el.style.display = 'flex';
+        }
+
+        function hideTrialExpiredOverlay() {
+            const el = document.getElementById('trialExpiredOverlay');
+            if (el) el.style.display = 'none';
+        }
+
+        function updateTrialPlanButton(user) {
+            const btn = document.getElementById('trialPlanButton');
+            if (!btn) return;
+
+            // Default: allow starting trial (will open auth modal if not logged in)
+            btn.disabled = false;
+            btn.textContent = 'Start free trial';
+
+            if (!user) return;
+
+            const planId = user.pricePlan || null;
+            const trial = user.trial || {};
+            const used = !!trial.used;
+            const active = !!trial.active;
+            const expired = !!trial.expired;
+
+            // If user has any paid plan, trial is unavailable
+            if (planId && planId !== 'trial') {
+                btn.disabled = true;
+                btn.textContent = 'Unavailable';
+                return;
+            }
+
+            if (active) {
+                btn.disabled = true;
+                btn.textContent = 'Active';
+                return;
+            }
+
+            if (used || expired) {
+                btn.disabled = true;
+                btn.textContent = 'Expired';
+                return;
             }
         }
 
@@ -345,6 +607,7 @@
                 const token = await checkUserExists();
 
                 if (!token) {
+                    sessionStorage.setItem('pendingPlan', planId);
                     showModal();
                     return;
                 }
@@ -357,6 +620,29 @@
                 button.disabled = true;
                 const originalText = button.textContent;
                 button.innerHTML = '<span class="loading"></span> Processing...';
+
+                // Free trial plan (no Stripe checkout)
+                if (planId === 'trial') {
+                    const response = await fetch(`${API_URL}/api/plans/start-trial`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to start trial');
+                    }
+
+                    await loadUserInfo();
+                    // Send user to the app
+                    window.location.href = '/dashboard';
+                    return;
+                }
 
                 const response = await fetch(`${API_URL}/api/stripe/create-checkout-session`, {
                     method: 'POST',
@@ -380,8 +666,134 @@
                 const button = buttonElement || event?.target || document.querySelector(`button[onclick*="${planId}"]`);
                 if (button) {
                     button.disabled = false;
-                    button.textContent = 'Select Plan';
+                    button.textContent = planId === 'trial' ? 'Start free trial' : 'Select Plan';
                 }
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const registerForm = document.getElementById('registerForm');
+            const loginForm = document.getElementById('loginForm');
+            const tabs = document.querySelectorAll('.auth-tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'register') {
+                registerForm.style.display = 'block';
+                loginForm.style.display = 'none';
+                tabs[0].classList.add('active');
+                // Clear form errors
+                document.getElementById('errorMessage').style.display = 'none';
+            } else {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                tabs[1].classList.add('active');
+                // Clear form errors
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const btn = event.target;
+
+            if (!name || !email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    hideModal();
+                    await loadUserInfo();
+                    // Retry plan selection
+                    const planId = sessionStorage.getItem('pendingPlan');
+                    if (planId) {
+                        sessionStorage.removeItem('pendingPlan');
+                        selectPlan(planId);
+                    }
+                } else {
+                    showError(data.error || 'Registration failed. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('Network error. Please check your connection and try again.');
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = event.target;
+
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    hideModal();
+                    await loadUserInfo();
+                    // Retry plan selection
+                    const planId = sessionStorage.getItem('pendingPlan');
+                    if (planId) {
+                        sessionStorage.removeItem('pendingPlan');
+                        selectPlan(planId);
+                    }
+                } else {
+                    showError(data.error || 'Login failed. Please check your credentials.');
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('Network error. Please check your connection and try again.');
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
             }
         }
 
