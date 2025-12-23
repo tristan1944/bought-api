@@ -78,18 +78,37 @@ function saveBase64Image(base64Data, userId, imageType) {
   }
 }
 
-function mapPricePlanToAdminPlanType(pricePlan) {
-  if (!pricePlan) return null;
+function parseSqliteDateToMs(sqliteDate) {
+  if (!sqliteDate) return null;
+  // SQLite CURRENT_TIMESTAMP format: "YYYY-MM-DD HH:MM:SS"
+  const iso = String(sqliteDate).replace(' ', 'T') + 'Z';
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function effectivePlanId(user) {
+  const paid = user && user.pricePlan ? String(user.pricePlan) : null;
+  if (paid) return paid;
+
+  const expiresMs = parseSqliteDateToMs(user && user.trialExpiresAt);
+  const activeTrial = Boolean(expiresMs && Date.now() < expiresMs);
+  return activeTrial ? 'trial' : null;
+}
+
+function mapPricePlanToAdminPlanType(planId) {
+  if (!planId) return null;
 
   // bought-api uses plan1/plan2/plan3 internally.
-  // admin-api uses starter/essential/pro plan types.
-  switch (pricePlan) {
+  // admin-api uses starter/essential/pro plan types, plus free-trial.
+  switch (planId) {
     case 'plan1':
       return 'starter-monthly';
     case 'plan2':
       return 'essential-monthly';
     case 'plan3':
       return 'pro-monthly';
+    case 'trial':
+      return 'free-trial';
     default:
       return null;
   }
@@ -169,8 +188,8 @@ async function provisionAdminCredential(adminApiUrl, userEmail, planType) {
   };
 }
 
-async function resolveCredentialForUser(adminApiUrl, userEmail, pricePlan) {
-  const planType = mapPricePlanToAdminPlanType(pricePlan);
+async function resolveCredentialForUser(adminApiUrl, userEmail, planId) {
+  const planType = mapPricePlanToAdminPlanType(planId);
   if (!planType) {
     const err = new Error(
       'No active plan found for your account. Please purchase a plan before saving/finalizing customizations.'
@@ -203,7 +222,8 @@ router.post('/save', authenticateToken, async (req, res) => {
 
     let credentialId = null;
     try {
-      const resolved = await resolveCredentialForUser(adminApiUrl, userEmail, req.user.pricePlan);
+      const planId = effectivePlanId(req.user);
+      const resolved = await resolveCredentialForUser(adminApiUrl, userEmail, planId);
       credentialId = resolved.credentialId;
     } catch (err) {
       const isPlanError = err.status === 402;
@@ -298,7 +318,8 @@ router.post('/finalize', authenticateToken, async (req, res) => {
     let adminUser = null;
 
     try {
-      const resolved = await resolveCredentialForUser(adminApiUrl, userEmail, req.user.pricePlan);
+      const planId = effectivePlanId(req.user);
+      const resolved = await resolveCredentialForUser(adminApiUrl, userEmail, planId);
       credentialId = resolved.credentialId;
       adminUser = resolved.adminUser;
     } catch (err) {
@@ -352,9 +373,26 @@ router.post('/finalize', authenticateToken, async (req, res) => {
       return res.status(503).json({ error: 'Unable to resolve admin user for this account.' });
     }
 
-    // Keep credential in pending_customization so admin can review before assigning
-    // The customization data (color + images) is already saved via /save endpoint
-    // Admin will manually move to 'assigned' after reviewing in the admin panel
+    // Ensure the credential is in pending_customization so it shows up in the admin review queue.
+    // (This is idempotent if it's already pending_customization.)
+    const statusResult = await fetchJson(`${adminApiUrl}/api/credentials/${credentialId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'pending_customization',
+        assigned_to_user_id: adminUserId,
+      }),
+    });
+
+    if (!statusResult.ok) {
+      return res.status(statusResult.status).json({
+        error: statusResult.data?.error || 'Failed to move credentials to pending customization',
+        details: statusResult.data?.details || statusResult.text,
+      });
+    }
+
+    // The customization data (color + images) is saved via /save endpoint.
+    // Admin can now review and (optionally) move the credential to online.
     res.json({
       success: true,
       message: 'Customization submitted for admin review',

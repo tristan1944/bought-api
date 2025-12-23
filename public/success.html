@@ -81,7 +81,7 @@
         async function finalizePlan() {
             if (!token || !sessionId) return;
             try {
-                await fetch('/api/stripe/confirm-checkout-session', {
+                await fetch('http://localhost:3000/api/stripe/confirm-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -6,6 +6,54 @@ const fs = require('fs');
 const ChatbotConfig = require('../models/ChatbotConfig');
 const { authenticateToken } = require('../middleware/auth');
 
+function parseSqliteDateToMs(sqliteDate) {
+  if (!sqliteDate) return null;
+  // SQLite CURRENT_TIMESTAMP format: "YYYY-MM-DD HH:MM:SS"
+  const iso = String(sqliteDate).replace(' ', 'T') + 'Z';
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function effectivePlanId(user) {
+  const paid = user && user.pricePlan ? String(user.pricePlan) : null;
+  if (paid) return paid;
+
+  const expiresMs = parseSqliteDateToMs(user && user.trialExpiresAt);
+  const activeTrial = Boolean(expiresMs && Date.now() < expiresMs);
+  return activeTrial ? 'trial' : null;
+}
+
+function mapBoughtPlanToAdminPlanType(planId) {
+  // bought-api uses plan1/plan2/plan3 (paid) and 'trial' (computed) internally.
+  // admin-api uses plan_type values like starter/essential/pro + free-trial.
+  switch (planId) {
+    case 'plan1':
+      return 'starter-monthly';
+    case 'plan2':
+      return 'essential-monthly';
+    case 'plan3':
+      return 'pro-monthly';
+    case 'trial':
+      return 'free-trial';
+    default:
+      return null;
+  }
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const text = await response.text();
+  let data = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = null;
+    }
+  }
+  return { ok: response.ok, status: response.status, data, text };
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -107,6 +155,86 @@ router.get('/config', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching chatbot config:', error);
     res.status(500).json({ error: 'Failed to fetch configuration' });
+  }
+});
+
+// Get the correct website embed snippet for the authenticated user.
+// This proxies admin-api's snippet generator so the frontend doesn't need direct access to admin-api.
+router.get('/snippet', authenticateToken, async (req, res) => {
+  try {
+    const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:3001';
+    const userEmail = req.user?.email;
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'User email not found. Please log in again.' });
+    }
+
+    // Optional query passthroughs (mostly for debugging)
+    const params = new URLSearchParams();
+    const passthroughKeys = ['unique_id', 'uniqueId', 'navApiUrl', 'navEventsPath', 'versionID', 'userID'];
+    for (const key of passthroughKeys) {
+      const value = req.query[key];
+      if (typeof value === 'string' && value.trim()) {
+        params.set(key, value.trim());
+      }
+    }
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    const upstreamUrl = `${adminApiUrl}/api/users/${encodeURIComponent(userEmail)}/snippet${qs}`;
+    let result = await fetchJson(upstreamUrl);
+
+    // Smooth onboarding: if admin-api doesn't know this user yet (or doesn't have credentials yet),
+    // try provisioning via /api/plans/sync using the buyer's plan/trial, then retry.
+    if (!result.ok && (result.status === 404 || result.status === 409)) {
+      const planId = effectivePlanId(req.user);
+      const planType = mapBoughtPlanToAdminPlanType(planId);
+
+      if (!planType) {
+        return res.status(402).json({
+          error: 'No active plan found for your account yet.',
+          details: 'Purchase a plan (or start a trial) to generate your integration snippet.',
+        });
+      }
+
+      const sync = await fetchJson(`${adminApiUrl}/api/plans/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          plan_type: planType,
+          is_plan_change: true,
+        }),
+      });
+
+      if (!sync.ok) {
+        return res.status(sync.status).json({
+          error: sync.data?.error || 'Failed to provision credentials for your account.',
+          details: sync.data?.details || sync.text || undefined,
+        });
+      }
+
+      // Retry snippet fetch after provisioning
+      result = await fetchJson(upstreamUrl);
+    }
+
+    if (!result.ok) {
+      return res.status(result.status).json({
+        error: (result.data && (result.data.error || result.data.message)) || 'Failed to fetch snippet from admin-api',
+        details: (result.data && result.data.details) || result.text || undefined,
+      });
+    }
+
+    return res.json({
+      snippet: result.data?.snippet || '',
+      meta: result.data?.meta || null,
+      customization: result.data?.customization || null,
+    });
+  } catch (error) {
+    console.error('Error fetching snippet from admin-api:', error);
+    return res.status(503).json({
+      error: 'Snippet service unavailable',
+      details: 'Make sure ADMIN_API_URL is set and admin-api is running.',
+    });
   }
 });
 

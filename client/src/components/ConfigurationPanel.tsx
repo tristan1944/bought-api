@@ -55,6 +55,34 @@ export function ConfigurationPanel({ config, updateConfig }: ConfigurationPanelP
         throw new Error('Not authenticated');
       }
 
+      // Flush any pending debounced save so "Done" always reflects the latest changes.
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+
+      const saveResponse = await fetch('/api/customizations/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          primaryColor: config.primaryColor,
+          agentAvatar: config.agentAvatar,
+          headerImage: config.headerImage,
+          popupImage: config.popupImage,
+          bannerImage: config.headerImage, // Using headerImage as banner
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        const saveError = await saveResponse.json().catch(() => ({}));
+        const msg = saveError?.error || 'Failed to save customization before finalizing.';
+        const details = saveError?.details ? ` ${saveError.details}` : '';
+        throw new Error(`${msg}${details}`.trim());
+      }
+
       const response = await fetch('/api/customizations/finalize', {
         method: 'POST',
         headers: {
@@ -66,12 +94,14 @@ export function ConfigurationPanel({ config, updateConfig }: ConfigurationPanelP
       if (response.ok) {
         setFinalizeMessage({
           type: 'success',
-          text: 'Customization submitted! An admin will review and activate your chatbot shortly.',
+          text: 'Your chatbot customization will register shortly.',
         });
         setTimeout(() => setFinalizeMessage(null), 5000);
       } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to finalize customization');
+        const error = await response.json().catch(() => ({}));
+        const msg = error?.error || 'Failed to finalize customization';
+        const details = error?.details ? ` ${error.details}` : '';
+        throw new Error(`${msg}${details}`.trim());
       }
     } catch (error: any) {
       setFinalizeMessage({
@@ -242,17 +272,17 @@ export function ConfigurationPanel({ config, updateConfig }: ConfigurationPanelP
           <button
             onClick={handleFinalize}
             disabled={!isCustomizationComplete() || isFinalizing}
-            className="w-full px-6 py-3 rounded-lg font-medium bg-gray-400 text-gray-700 cursor-pointer hover:bg-gray-500 transition-all flex items-center justify-center"
+            // IMPORTANT: This project uses a precompiled Tailwind CSS file.
+            // Only use utility classes that exist in `client/src/index.css` (e.g. bg-gradient-to-br, from-indigo-500, etc.).
+            className="w-full px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-sm hover:shadow-lg active:scale-95 disabled:opacity-40"
           >
-            {isFinalizing ? (
-              <span>Submitting...</span>
-            ) : (
-              <span>Done</span>
-            )}
+            <span className="relative z-10">
+              {isFinalizing ? 'Submitting...' : 'Done'}
+            </span>
           </button>
           {!isCustomizationComplete() && (
             <p className="mt-2 text-xs text-gray-500 text-center">
-              Customize the color and upload at least one image to enable
+              Customize the color and upload at least one image to enable the Done button.
             </p>
           )}
         </div>
