@@ -96,7 +96,10 @@ export function ConfigurationPanel({ config, updateConfig }: ConfigurationPanelP
           type: 'success',
           text: 'Your chatbot customization will register shortly.',
         });
-        setTimeout(() => setFinalizeMessage(null), 5000);
+        // Redirect to pricing page after showing success message
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
       } else {
         const error = await response.json().catch(() => ({}));
         const msg = error?.error || 'Failed to finalize customization';
