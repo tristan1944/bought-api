@@ -3,10 +3,11 @@ import { Copy, Check } from 'lucide-react';
 import { ChatbotConfig } from '../App';
 
 interface CodeSnippetProps {
-  config: ChatbotConfig;
+  config?: ChatbotConfig;
+  compact?: boolean;
 }
 
-export function CodeSnippet({ config }: CodeSnippetProps) {
+export function CodeSnippet({ config, compact }: CodeSnippetProps) {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [snippet, setSnippet] = useState<string>('');
@@ -111,7 +112,11 @@ export function CodeSnippet({ config }: CodeSnippetProps) {
             )}
           </button>
         </div>
-        <pre className="p-4 overflow-x-auto text-xs text-gray-300">
+        <pre
+          className={`p-4 overflow-x-auto text-xs text-gray-300 ${
+            compact ? 'max-h-64 overflow-y-auto' : ''
+          }`}
+        >
           <code>{codeToShow}</code>
         </pre>
       </div>

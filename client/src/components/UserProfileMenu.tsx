@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Code2, ChevronDown } from 'lucide-react';
+import { CodeSnippet } from './CodeSnippet';
 
 interface UserData {
   id: number;
@@ -10,6 +11,7 @@ interface UserData {
 
 export function UserProfileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showIntegration, setShowIntegration] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +61,7 @@ export function UserProfileMenu() {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setShowIntegration(false);
       }
     }
 
@@ -70,7 +73,8 @@ export function UserProfileMenu() {
     localStorage.removeItem('token');
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    window.location.href = '/login.html';
+    localStorage.removeItem('integrationSnippet');
+    window.location.href = '/';
   };
 
   const displayName = userData?.name || 'User';
@@ -80,13 +84,24 @@ export function UserProfileMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white hover:shadow-lg transition-shadow"
+        className="flex items-center gap-3 rounded-full hover:bg-gray-50 transition-colors px-2 py-1"
       >
-        <User className="size-5" />
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white hover:shadow-lg transition-shadow">
+          <User className="size-5" />
+        </div>
+        <div className="hidden sm:block text-left max-w-48">
+          <p className="text-sm text-gray-900 truncate">{displayName}</p>
+          <p className="text-xs text-gray-500 truncate">{displayEmail}</p>
+        </div>
+        <ChevronDown
+          className={`hidden sm:block size-4 text-gray-400 transition-transform ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+        <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
           {/* User Info */}
           <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center gap-3">
@@ -106,6 +121,31 @@ export function UserProfileMenu() {
               <Settings className="size-4 text-gray-500" />
               <span className="text-sm text-gray-700">Account Settings</span>
             </button>
+
+            <button
+              onClick={() => setShowIntegration(!showIntegration)}
+              className="w-full px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Code2 className="size-4 text-gray-500" />
+                <span className="text-sm text-gray-700">Integration</span>
+              </div>
+              <ChevronDown
+                className={`size-4 text-gray-400 transition-transform ${
+                  showIntegration ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {showIntegration && (
+              <div className="px-4 pb-3">
+                <p className="text-xs text-gray-500 mb-2">
+                  Copy and paste this code before the closing &lt;/body&gt; tag on your website.
+                </p>
+                <CodeSnippet compact />
+              </div>
+            )}
+
             <button 
               onClick={handleLogout}
               className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-50 transition-colors text-red-600"

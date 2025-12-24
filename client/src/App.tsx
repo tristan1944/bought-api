@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ConfigurationPanel } from './components/ConfigurationPanel';
 import { PreviewPanel } from './components/PreviewPanel';
 import { UserProfileMenu } from './components/UserProfileMenu';
@@ -27,6 +27,44 @@ export default function App() {
   const updateConfig = (updates: Partial<ChatbotConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }));
   };
+
+  // If Stripe redirects here with a session_id, confirm it using the stored JWT.
+  // This is a best-effort fallback in case webhooks are delayed.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      const sessionId = params.get('session_id');
+      if (!sessionId) return;
+
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      if (!token) return;
+
+      fetch('/api/stripe/confirm-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ sessionId }),
+      })
+        .catch(() => {})
+        .finally(() => {
+          // Remove session_id from URL after processing
+          try {
+            params.delete('session_id');
+            const newUrl =
+              window.location.pathname +
+              (params.toString() ? `?${params.toString()}` : '') +
+              (window.location.hash || '');
+            window.history.replaceState({}, document.title, newUrl);
+          } catch (e) {
+            // ignore
+          }
+        });
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
